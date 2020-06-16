@@ -1,35 +1,77 @@
 import React, { useState, useEffect } from "react";
 import { axiosWithAuth } from "../utils/axiosWithAuth";
 
-const initialValues = {
-  friends: [],
+const initialFormValues = {
+  name: "",
+  age: "",
+  email: "",
 };
 
 const Friends = () => {
-  const [friends, setFriends] = useState(initialValues);
+  const [friends, setFriends] = useState([]);
+  const [formValues, setFormValues] = useState(initialFormValues);
 
   useEffect(() => {
     getData();
   }, []);
 
+  const handleChange = (event) => {
+    setFormValues({ ...formValues, [event.target.name]: event.target.value });
+  };
+
   const getData = () => {
-    console.log("inside getdata -> friends", friends);
     axiosWithAuth()
       .get("/api/friends")
       .then((res) => {
         console.log("getData -> res", res);
-        setFriends({
-          friends: res.data,
-        });
+        setFriends(res.data);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const onSubmit = (event) => {
+    event.preventDefault();
+    axiosWithAuth()
+      .post("/api/friends", formValues)
+      .then((res) => {
+        console.log("onSubmit -> res", res);
+        setFormValues(initialFormValues);
+        getData();
       })
       .catch((err) => console.log(err));
   };
 
   return (
     <div>
-      {friends.friends.length ? (
+      <div>
+        <form onSubmit={onSubmit}>
+          <input
+            type="text"
+            placeholder="Enter a Name"
+            name="name"
+            value={formValues.name}
+            onChange={handleChange}
+          />
+          <input
+            type="text"
+            placeholder="Enter an Age"
+            name="age"
+            value={formValues.age}
+            onChange={handleChange}
+          />
+          <input
+            type="text"
+            placeholder="Enter an Email"
+            name="email"
+            value={formValues.email}
+            onChange={handleChange}
+          />
+          <button>Add</button>
+        </form>
+      </div>
+      {friends.length ? (
         <div>
-          {friends.friends.map((friend) => (
+          {friends.map((friend) => (
             <div key={friend.id}>
               <p>{friend.name}</p>
               <p>{friend.age}</p>
